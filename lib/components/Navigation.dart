@@ -23,7 +23,7 @@ class _NavigationState extends State<Navigation> {
   DeviceCalendarPlugin _deviceCalendarPlugin;
   List<Calendar> _calendars = new List<Calendar>();
   Map<String, List<Calendar>> _calendarsMap = new Map<String, List<Calendar>>();
-  List<bool> _enabledCalendars = new List<bool>();
+  Map<String, List<bool>> _enabledCalendars = new Map<String, List<bool>>();
 
   _NavigationState(DeviceCalendarPlugin deviceCalendarPlugin) {
     this._deviceCalendarPlugin = deviceCalendarPlugin;
@@ -42,7 +42,6 @@ class _NavigationState extends State<Navigation> {
 
   @override
   Widget build(BuildContext context) {
-    print(_enabledCalendars);
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: Center(child: Text('My Page!')),
@@ -83,14 +82,16 @@ class _NavigationState extends State<Navigation> {
                               Row(children: <Widget>[
                                 Checkbox(
                                   key: Key(_calendarsMap.values
-                                      .toList()[index][calendarIndex].toString()),
-                                  value: _enabledCalendars[],
+                                      .toList()[index][calendarIndex]
+                                      .toString()),
+                                  value: _enabledCalendars.values
+                                      .toList()[index][calendarIndex],
                                   onChanged: (bool newValue) {
                                     print(_enabledCalendars);
                                     print(newValue);
                                     setState(() {
-                                      _enabledCalendars[
-                                              _enabledCalendars.length - 1] =
+                                      _enabledCalendars[_calendarsMap.keys
+                                              .toList()[index]][calendarIndex] =
                                           newValue;
                                       print(_enabledCalendars);
                                     });
@@ -128,10 +129,10 @@ class _NavigationState extends State<Navigation> {
           print(calendar.accountName);
           if (!calendars.containsKey(calendar.accountName)) {
             calendars.putIfAbsent(calendar.accountName, () => [calendar]);
+            _enabledCalendars.putIfAbsent(calendar.accountName, () => [true]);
           } else {
-            List<Calendar> tempCals = calendars[calendar.accountName];
-            tempCals.add(calendar);
-            calendars.update(calendar.accountName, (value) => tempCals);
+            calendars.update(calendar.accountName, (value) => calendars[calendar.accountName].add(calendar));
+            _enabledCalendars.update(calendar.accountName, (value) => _enabledCalendars[calendar.accountName].add(true));
           }
           // TODO: Make it more elegant with calendars.update function
 //          calendars.update(
@@ -139,7 +140,6 @@ class _NavigationState extends State<Navigation> {
 //            (existingValue) => calendars[calendar.accountName],
 //            ifAbsent: () => calendar,
 //          );
-          _enabledCalendars.add(true);
         }
         print(calendars);
         _calendarsMap = calendars;
