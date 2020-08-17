@@ -22,6 +22,8 @@ class Navigation extends StatefulWidget {
 class _NavigationState extends State<Navigation> {
   DeviceCalendarPlugin _deviceCalendarPlugin;
   List<Calendar> _calendars = new List<Calendar>();
+  Map<String, List<Calendar>> _calendarsMap = new Map<String, List<Calendar>>();
+  List<bool> _enabledCalendars = new List<bool>();
 
   _NavigationState(DeviceCalendarPlugin deviceCalendarPlugin) {
     this._deviceCalendarPlugin = deviceCalendarPlugin;
@@ -40,6 +42,7 @@ class _NavigationState extends State<Navigation> {
 
   @override
   Widget build(BuildContext context) {
+    print(_enabledCalendars);
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: Center(child: Text('My Page!')),
@@ -60,9 +63,47 @@ class _NavigationState extends State<Navigation> {
             ListView.builder(
                 shrinkWrap: true, // 1st add
                 physics: ClampingScrollPhysics(), // 2nd add
-                itemCount: _calendars.length,
+                itemCount: _calendarsMap.length,
                 itemBuilder: (BuildContext context, int index) {
-                  return ListView();
+                  return ListView(
+                    shrinkWrap: true,
+                    children: <Widget>[
+                      new ListTile(
+                          title: new Text(_calendarsMap.keys.toList()[index])),
+                      ListView.builder(
+                          shrinkWrap: true,
+                          physics: ClampingScrollPhysics(),
+                          itemCount:
+                              _calendarsMap.values.toList()[index].length,
+                          padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                          itemBuilder:
+                              (BuildContext context, int calendarIndex) {
+                            return Container(
+                                child: Column(children: <Widget>[
+                              Row(children: <Widget>[
+                                Checkbox(
+                                  key: Key(_calendarsMap.values
+                                      .toList()[index][calendarIndex].toString()),
+                                  value: _enabledCalendars[],
+                                  onChanged: (bool newValue) {
+                                    print(_enabledCalendars);
+                                    print(newValue);
+                                    setState(() {
+                                      _enabledCalendars[
+                                              _enabledCalendars.length - 1] =
+                                          newValue;
+                                      print(_enabledCalendars);
+                                    });
+                                  },
+                                ),
+                                Text(_calendarsMap.values
+                                    .toList()[index][calendarIndex]
+                                    .name)
+                              ])
+                            ]));
+                          })
+                    ],
+                  );
                 })
           ],
         ),
@@ -76,7 +117,7 @@ class _NavigationState extends State<Navigation> {
       if (permissionsGranted.isSuccess && !permissionsGranted.data) {
         permissionsGranted = await _deviceCalendarPlugin.requestPermissions();
         if (!permissionsGranted.isSuccess || !permissionsGranted.data) {
-          return;
+          return null;
         }
       }
       final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
@@ -92,13 +133,16 @@ class _NavigationState extends State<Navigation> {
             tempCals.add(calendar);
             calendars.update(calendar.accountName, (value) => tempCals);
           }
+          // TODO: Make it more elegant with calendars.update function
 //          calendars.update(
 //            calendar.accountName,
-//            (existingValue) => [calendars[calendar.accountName], calendar],
+//            (existingValue) => calendars[calendar.accountName],
 //            ifAbsent: () => calendar,
 //          );
+          _enabledCalendars.add(true);
         }
         print(calendars);
+        _calendarsMap = calendars;
       });
     } on PlatformException catch (e) {
       print(e);
