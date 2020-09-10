@@ -1,12 +1,8 @@
-import 'dart:collection';
-
-import 'package:calenyou/utils/CalendarUtils.dart';
 import 'package:calenyou/utils/Permissions.dart';
+import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'NewAccount.dart';
-import 'package:device_calendar/device_calendar.dart';
 
 class Navigation extends StatefulWidget {
   DeviceCalendarPlugin _deviceCalendarPlugin;
@@ -131,8 +127,13 @@ class _NavigationState extends State<Navigation> {
             calendars.putIfAbsent(calendar.accountName, () => [calendar]);
             _enabledCalendars.putIfAbsent(calendar.accountName, () => [true]);
           } else {
-            calendars.update(calendar.accountName, (value) => calendars[calendar.accountName].add(calendar));
-            _enabledCalendars.update(calendar.accountName, (value) => _enabledCalendars[calendar.accountName].add(true));
+            List<Calendar> tmpCalendars = calendars[calendar.accountName];
+            tmpCalendars.add(calendar);
+            calendars.update(calendar.accountName, (value) => tmpCalendars);
+            List<bool> tmpEnabled = _enabledCalendars[calendar.accountName];
+            tmpEnabled.add(true);
+            _enabledCalendars.update(
+                calendar.accountName, (value) => tmpEnabled);
           }
           // TODO: Make it more elegant with calendars.update function
 //          calendars.update(
