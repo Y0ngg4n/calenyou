@@ -1,11 +1,15 @@
-import 'package:calenyou/utils/Permissions.dart';
-import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:time_machine/time_machine.dart';
 
 import 'components/Navigation.dart';
+import 'utils/CalendarUtils.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await TimeMachine.initialize({'rootBundle': rootBundle});
+
   runApp(Calenyou());
 }
 
@@ -14,17 +18,10 @@ class Calenyou extends StatelessWidget {
 
   final appTitle = 'Calenyou';
 
-  DeviceCalendarPlugin _deviceCalendarPlugin;
-
-  Calenyou(){
-    _deviceCalendarPlugin = DeviceCalendarPlugin();
-  }
-
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-
+    CalendarUtils.retrieveCalendars();
     return MaterialApp(
       title: appTitle,
       theme: ThemeData(
@@ -43,7 +40,7 @@ class Calenyou extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: Navigation(_deviceCalendarPlugin),
+      home: Navigation(),
     );
   }
 }
